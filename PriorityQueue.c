@@ -5,33 +5,30 @@
 #include "PriorityQueue.h"
 #define INITIAL_SIZE 16
 
-typedef struct node{
+typedef struct node
+{
+    char *element;
     int priority;
-    void *value;
 }Node;
 
 struct priorityQueue{
-    Node* arry;
-    int si
+    Node **elements;
+    int current_count;
+    int size;
 };
-
-Node* node_new(void *element, int priority)
-{
-    Node *new_node = malloc(sizeof (Node));
-    new_node->value = element;
-    new_node->priority = priority;
-    return new_node;
-}
 
 PriorityQueue* p_queue_new()
 {
     PriorityQueue *new_queue = malloc(sizeof(PriorityQueue));
-    new_queue->arry = calloc(16, sizeof (Node));
+    new_queue->current_count = 0;
+    new_queue->size = INITIAL_SIZE;
+
+    new_queue->elements = calloc(INITIAL_SIZE, sizeof (Node));
 
     return new_queue;
 }
 
 void p_queue_enqueue(PriorityQueue* pq, void *element, int priority)
 {
-    
+
 }
