@@ -28,7 +28,22 @@ PriorityQueue* p_queue_new()
     return new_queue;
 }
 
-void p_queue_enqueue(PriorityQueue* pq, void *element, int priority)
+int p_queue_empty(PriorityQueue* pq)
 {
+    for(int i = 0; i < pq->size; i++)
+    {
+        if(pq->elements[i] == NULL)
+            continue;
+        else
+            return 0;
+    }
+    return 1;
+}
 
+void p_queue_enqueue(PriorityQueue* pq, char *element, int priority)
+{
+    if(p_queue_empty(pq))
+    {
+        
+    }
 }
