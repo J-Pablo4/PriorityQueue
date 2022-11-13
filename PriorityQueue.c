@@ -17,6 +17,9 @@ struct priorityQueue{
     int size;
 };
 
+void heapify_up(PriorityQueue *pq, int index);
+void heapify_down(PriorityQueue *pq);
+
 Node* node_new(char *element, int priority)
 {
     Node *new_node = malloc(sizeof (Node));
@@ -49,16 +52,106 @@ int p_queue_empty(PriorityQueue* pq)
     return 1;
 }
 
-void p_queue_enqueue(PriorityQueue* pq, char *element, int priority)
+void p_queue_enqueue(PriorityQueue *pq, char *element, int priority)
 {
     if(p_queue_empty(pq))
     {
         pq->elements[0] = node_new(element, priority);
+        pq->current_count++;
     } else
     {
+//        Children left: 2n + 1
+//        Children right: 2n + 2
+//        Parent: (n-1)/2
         if(pq->current_count < pq->size)
         {
+            for (int i = 0; i < pq->size; ++i)
+            {
+                if(pq->elements[i] == NULL)
+                {
+                    pq->elements[i] = node_new(element, priority);
+                    pq->current_count++;
 
+                    heapify_up(pq, i);
+                    return;
+                }
+            }
         }
+    }
+}
+
+void* p_queue_dequeue(PriorityQueue* pq)
+{
+    void *value_to_return = pq->elements[0]->element;
+    Node *to_free = pq->elements[0];
+
+    pq->elements[0] = pq->elements[pq->current_count-1];
+
+    pq->elements[pq->current_count-1] = NULL;
+
+    free(to_free);
+    pq->current_count--;
+
+    heapify_down(pq);
+    return value_to_return;
+}
+
+void heapify_up(PriorityQueue *pq, int index)
+{
+    int parent = (index-1)/2;
+
+    while(pq->elements[parent]->priority > pq->elements[index]->priority)
+    {
+        Node *pivot = pq->elements[parent];
+        pq->elements[parent] = pq->elements[index];
+        pq->elements[index] = pivot;
+
+        index = parent;
+        parent = (index-1)/2;
+
+        if(index == 0)
+            break;
+    }
+}
+
+void heapify_down(PriorityQueue *pq)
+{
+    int index = 0;
+    int left = (index*2) + 1;
+    int right = (index*2) + 2;
+
+    while (pq->elements[left] !=NULL)
+    {
+        if(pq->elements[index]->priority > pq->elements[left]->priority)
+        {
+            Node *pivot = pq->elements[index];
+            pq->elements[index] = pq->elements[left];
+            pq->elements[left] = pivot;
+
+            index = left;
+            left = (index*2) + 1;
+            right = (index*2) + 2;
+
+        } else if(pq->elements[right] != NULL)
+        {
+            if(pq->elements[index]->priority > pq->elements[right]->priority )
+            {
+                Node *pivot = pq->elements[index];
+                pq->elements[index] = pq->elements[right];
+                pq->elements[right] = pivot;
+
+                index = right;
+                left = (index*2) + 1;
+                right = (index*2) + 2;
+
+                if(pq->elements[left] !=NULL || pq->elements[right] !=NULL)
+                {
+                    index = 0;
+                    left = (index*2) + 1;
+                    right = (index*2) + 2;
+                }
+            }
+        } else
+            break;
     }
 }
