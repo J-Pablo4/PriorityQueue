@@ -17,6 +17,15 @@ struct priorityQueue{
     int size;
 };
 
+Node* node_new(char *element, int priority)
+{
+    Node *new_node = malloc(sizeof (Node));
+    new_node->priority = priority;
+    new_node->element = element;
+
+    return new_node;
+}
+
 PriorityQueue* p_queue_new()
 {
     PriorityQueue *new_queue = malloc(sizeof(PriorityQueue));
@@ -44,6 +53,12 @@ void p_queue_enqueue(PriorityQueue* pq, char *element, int priority)
 {
     if(p_queue_empty(pq))
     {
-        
+        pq->elements[0] = node_new(element, priority);
+    } else
+    {
+        if(pq->current_count < pq->size)
+        {
+
+        }
     }
 }
