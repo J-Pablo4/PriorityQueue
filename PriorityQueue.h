@@ -11,7 +11,7 @@
 typedef struct priorityQueue PriorityQueue;
 
 PriorityQueue* p_queue_new();
-void p_queue_enqueue(PriorityQueue* pq, char *element, int priority);
+void p_queue_enqueue(PriorityQueue* pq, void *element, int priority);
 
 int p_queue_empty(PriorityQueue* pq);
 

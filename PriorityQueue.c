@@ -52,11 +52,11 @@ int p_queue_empty(PriorityQueue* pq)
     return 1;
 }
 
-void p_queue_enqueue(PriorityQueue *pq, char *element, int priority)
+void p_queue_enqueue(PriorityQueue *pq, void *data, int priority)
 {
     if(p_queue_empty(pq))
     {
-        pq->elements[0] = node_new(element, priority);
+        pq->elements[0] = node_new(data, priority);
         pq->current_count++;
     } else
     {
@@ -69,7 +69,7 @@ void p_queue_enqueue(PriorityQueue *pq, char *element, int priority)
             {
                 if(pq->elements[i] == NULL)
                 {
-                    pq->elements[i] = node_new(element, priority);
+                    pq->elements[i] = node_new(data, priority);
                     pq->current_count++;
 
                     heapify_up(pq, i);
