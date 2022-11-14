@@ -35,7 +35,7 @@ PriorityQueue* p_queue_new()
     new_queue->current_count = 0;
     new_queue->size = INITIAL_SIZE;
 
-    new_queue->elements = calloc(INITIAL_SIZE, sizeof (Node));
+    new_queue->elements = calloc(INITIAL_SIZE, sizeof (Node *));
 
     return new_queue;
 }
@@ -65,17 +65,28 @@ void p_queue_enqueue(PriorityQueue *pq, void *data, int priority)
 //        Parent: (n-1)/2
         if(pq->current_count < pq->size)
         {
-            for (int i = 0; i < pq->size; ++i)
-            {
-                if(pq->elements[i] == NULL)
-                {
-                    pq->elements[i] = node_new(data, priority);
-                    pq->current_count++;
+            pq->elements[pq->current_count] = node_new(data, priority);
 
-                    heapify_up(pq, i);
-                    return;
-                }
+
+            heapify_up(pq, pq->current_count);
+            pq->current_count++;
+            return;
+
+
+        }else
+        {
+            pq->size += 16;
+            pq->elements = realloc(pq->elements, sizeof (Node *) * pq->size);
+
+            for (int i = pq->current_count; i < pq->size; ++i)
+            {
+                pq->elements[i] = NULL;
             }
+            pq->elements[pq->current_count] = node_new(data, priority);
+
+            heapify_up(pq, pq->current_count);
+            pq->current_count++;
+            return;
         }
     }
 }
@@ -118,39 +129,26 @@ void heapify_down(PriorityQueue *pq)
 {
     int index = 0;
     int left = (index*2) + 1;
-    int right = (index*2) + 2;
+    int right;
+
+    int smaller;
 
     while (pq->elements[left] !=NULL)
     {
-        if(pq->elements[index]->priority > pq->elements[left]->priority)
+        smaller = left;
+        right = (index*2) + 2;
+        if(pq->elements[right] != NULL && pq->elements[right]->priority < pq->elements[left]->priority)
+        {
+            smaller = right;
+        }
+        if(pq->elements[index]->priority > pq->elements[smaller]->priority)
         {
             Node *pivot = pq->elements[index];
-            pq->elements[index] = pq->elements[left];
-            pq->elements[left] = pivot;
+            pq->elements[index] = pq->elements[smaller];
+            pq->elements[smaller] = pivot;
 
-            index = left;
+            index = smaller;
             left = (index*2) + 1;
-            right = (index*2) + 2;
-
-        } else if(pq->elements[right] != NULL)
-        {
-            if(pq->elements[index]->priority > pq->elements[right]->priority )
-            {
-                Node *pivot = pq->elements[index];
-                pq->elements[index] = pq->elements[right];
-                pq->elements[right] = pivot;
-
-                index = right;
-                left = (index*2) + 1;
-                right = (index*2) + 2;
-
-                if(pq->elements[left] !=NULL || pq->elements[right] !=NULL)
-                {
-                    index = 0;
-                    left = (index*2) + 1;
-                    right = (index*2) + 2;
-                }
-            }
         } else
             break;
     }
