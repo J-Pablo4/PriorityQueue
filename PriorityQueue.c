@@ -7,12 +7,12 @@
 
 typedef struct node
 {
-    char *element;
+    char *content;
     int priority;
-}Node;
+}Box;
 
 struct priorityQueue{
-    Node **elements;
+    Box *elements;
     int current_count;
     int size;
 };
@@ -20,24 +20,15 @@ struct priorityQueue{
 void heapify_up(PriorityQueue *pq, int index);
 void heapify_down(PriorityQueue *pq);
 
-Node* node_new(char *element, int priority)
-{
-    Node *new_node = malloc(sizeof (Node));
-    new_node->priority = priority;
-    new_node->element = element;
-
-    return new_node;
-}
-
 PriorityQueue* p_queue_new()
 {
-    PriorityQueue *new_queue = malloc(sizeof(PriorityQueue));
-    new_queue->current_count = 0;
-    new_queue->size = INITIAL_SIZE;
+    PriorityQueue *pq = malloc(sizeof(PriorityQueue));
+    pq->current_count = 0;
+    pq->size = INITIAL_SIZE;
 
-    new_queue->elements = calloc(INITIAL_SIZE, sizeof (Node *));
+    pq->elements = calloc(INITIAL_SIZE, sizeof (Box));
 
-    return new_queue;
+    return pq;
 }
 
 int p_queue_empty(PriorityQueue* pq)
@@ -52,48 +43,44 @@ int p_queue_empty(PriorityQueue* pq)
     return 1;
 }
 
+int is_full(PriorityQueue *pq)
+{
+    return pq->current_count == pq->size;
+}
+
+void grow_array(PriorityQueue *pq)
+{
+    pq->size += 16;
+    pq->elements = realloc(pq->elements, pq->size * sizeof (Box));
+
+}
+
+Box new_box(int priority, void* data)
+{
+    Box b;
+    b.priority = priority;
+    b.content = data;
+
+    return b;
+}
+
+
 void p_queue_enqueue(PriorityQueue *pq, void *data, int priority)
 {
-    if(p_queue_empty(pq))
-    {
-        pq->elements[0] = node_new(data, priority);
-        pq->current_count++;
-    } else
-    {
-//        Children left: 2n + 1
-//        Children right: 2n + 2
-//        Parent: (n-1)/2
-        if(pq->current_count < pq->size)
-        {
-            pq->elements[pq->current_count] = node_new(data, priority);
+    if (is_full(pq))
+        grow_array(pq);
 
+    int new_element_index = pq->current_count;
 
-            heapify_up(pq, pq->current_count);
-            pq->current_count++;
-            return;
+    pq->elements[new_element_index] = new_box(priority, data);
 
-
-        }else
-        {
-            pq->size += 16;
-            pq->elements = realloc(pq->elements, sizeof (Node *) * pq->size);
-
-            for (int i = pq->current_count; i < pq->size; ++i)
-            {
-                pq->elements[i] = NULL;
-            }
-            pq->elements[pq->current_count] = node_new(data, priority);
-
-            heapify_up(pq, pq->current_count);
-            pq->current_count++;
-            return;
-        }
-    }
+    heapify_up(pq, new_element_index);
+    pq->current_count++;
 }
 
 void* p_queue_dequeue(PriorityQueue* pq)
 {
-    void *value_to_return = pq->elements[0]->element;
+    void *value_to_return = pq->elements[0]->content;
     Node *to_free = pq->elements[0];
 
     pq->elements[0] = pq->elements[pq->current_count-1];
@@ -111,17 +98,14 @@ void heapify_up(PriorityQueue *pq, int index)
 {
     int parent = (index-1)/2;
 
-    while(pq->elements[parent]->priority > pq->elements[index]->priority)
+    while(pq->elements[parent].priority > pq->elements[index].priority)
     {
-        Node *pivot = pq->elements[parent];
+        Box pivot = pq->elements[parent];
         pq->elements[parent] = pq->elements[index];
         pq->elements[index] = pivot;
 
         index = parent;
         parent = (index-1)/2;
-
-        if(index == 0)
-            break;
     }
 }
 
