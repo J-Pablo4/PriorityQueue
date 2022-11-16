@@ -3,7 +3,7 @@
 //
 
 #include "PriorityQueue.h"
-#define INITIAL_SIZE 16
+#define INITIAL_SIZE 2
 
 typedef struct node
 {
@@ -18,7 +18,6 @@ struct priorityQueue{
 };
 
 void heapify_up(PriorityQueue *pq, int index);
-void heapify_down(PriorityQueue *pq);
 
 PriorityQueue* p_queue_new()
 {
@@ -33,14 +32,7 @@ PriorityQueue* p_queue_new()
 
 int p_queue_empty(PriorityQueue* pq)
 {
-    for(int i = 0; i < pq->size; i++)
-    {
-        if(pq->elements[i] == NULL)
-            continue;
-        else
-            return 0;
-    }
-    return 1;
+    return pq->current_count == 0;
 }
 
 int is_full(PriorityQueue *pq)
@@ -78,20 +70,58 @@ void p_queue_enqueue(PriorityQueue *pq, void *data, int priority)
     pq->current_count++;
 }
 
+void heapify_down(PriorityQueue *pq)
+{
+    pq->elements[0] = pq->elements[pq->current_count];
+
+    int index = 0;
+    int left;
+    int right;
+
+    while (index < pq->current_count)
+    {
+        left = (index*2) + 1;
+        right = (index*2) + 2;
+
+        if (right < pq->current_count && pq->elements[right].priority < pq->elements[index].priority)
+        {
+            if (pq->elements[right].priority < pq->elements[left].priority)
+            {
+                Box pivot = pq->elements[index];
+                pq->elements[index] = pq->elements[right];
+                pq->elements[right] = pivot;
+
+                index = right;
+            } else
+            {
+                Box pivot = pq->elements[index];
+                pq->elements[index] = pq->elements[left];
+                pq->elements[left] = pivot;
+
+                index = left;
+            }
+        } else if(left < pq->current_count && pq->elements[left].priority < pq->elements[index].priority)
+        {
+            Box pivot = pq->elements[index];
+            pq->elements[index] = pq->elements[left];
+            pq->elements[left] = pivot;
+
+            index = left;
+        } else
+            return;
+    }
+}
+
 void* p_queue_dequeue(PriorityQueue* pq)
 {
-    void *value_to_return = pq->elements[0]->content;
-    Node *to_free = pq->elements[0];
-
-    pq->elements[0] = pq->elements[pq->current_count-1];
-
-    pq->elements[pq->current_count-1] = NULL;
-
-    free(to_free);
+    if (p_queue_empty(pq))
+        exit(EXIT_FAILURE);
+    void *to_return = pq->elements[0].content;
     pq->current_count--;
 
     heapify_down(pq);
-    return value_to_return;
+
+    return to_return;
 }
 
 void heapify_up(PriorityQueue *pq, int index)
@@ -106,34 +136,5 @@ void heapify_up(PriorityQueue *pq, int index)
 
         index = parent;
         parent = (index-1)/2;
-    }
-}
-
-void heapify_down(PriorityQueue *pq)
-{
-    int index = 0;
-    int left = (index*2) + 1;
-    int right;
-
-    int smaller;
-
-    while (pq->elements[left] !=NULL)
-    {
-        smaller = left;
-        right = (index*2) + 2;
-        if(pq->elements[right] != NULL && pq->elements[right]->priority < pq->elements[left]->priority)
-        {
-            smaller = right;
-        }
-        if(pq->elements[index]->priority > pq->elements[smaller]->priority)
-        {
-            Node *pivot = pq->elements[index];
-            pq->elements[index] = pq->elements[smaller];
-            pq->elements[smaller] = pivot;
-
-            index = smaller;
-            left = (index*2) + 1;
-        } else
-            break;
     }
 }
